@@ -1,6 +1,9 @@
 #include <Adafruit_NeoPixel.h>
 
 #define PIN 6
+#define WAIT 50
+#define WAIT2 50
+#define WAIT3 50
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -9,7 +12,9 @@
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(6, PIN, NEO_GRB + NEO_KHZ800);
+int i = 0;
+
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -17,32 +22,94 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 // on a live circuit...if you must, connect GND first.
 
 void setup() {
+  Serial.begin(9600);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
 
 void loop() {
   // Some example procedures showing how to display to the pixels:
-  colorWipe(strip.Color(255, 0, 0), 50); // Red
-  colorWipe(strip.Color(0, 255, 0), 50); // Green
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
+
+  colorSlide(strip.Color(255,0,0), WAIT2,2);
+  delay(WAIT3);
+
+  /*
+  Serial.print("In main loop\n");
+  colorWipe(strip.Color(i, 0, 0), WAIT); // Red
+  Serial.print("color swipe red\n");
+  delay(WAIT2);
+  colorWipe(strip.Color(0, i, 0), WAIT); // Green
+  Serial.print("color swipe green\n");
+  delay(WAIT2);
+  colorWipe(strip.Color(0, 0, i), WAIT); // Blue
+  Serial.print("color swipe blue\n");
+  delay(WAIT2);
+  i = i + 10;
+  i = i % 256;
+  Serial.print("at intensity:");
+  Serial.print(i);
+  Serial.print("\n");
+  */
+  
+  /*
   // Send a theater pixel chase in...
   theaterChase(strip.Color(127, 127, 127), 50); // White
+  Serial.print("theater chase white\n");
   theaterChase(strip.Color(127,   0,   0), 50); // Red
+  Serial.print("theater chase red\n");
   theaterChase(strip.Color(  0,   0, 127), 50); // Blue
-
+  //Serial.print("theater chase blue\n");	   
   rainbow(20);
+  Serial.print("rainbow\n");
   rainbowCycle(20);
+  Serial.print("rainbow cycle\n");
   theaterChaseRainbow(50);
+  Serial.print("theater chase rainbow\n");
+  */
+  
+}
+
+void colorSlide(uint32_t c, uint16_t w, uint8_t n)
+{
+  for(uint16_t i=0; i<strip.numPixels();i++)
+    {
+      int first_index = 0;
+      strip.setPixelColor(i,c);
+      Serial.print("n:");
+      Serial.print(n);
+      Serial.print("\n");
+      Serial.print("i:");
+      Serial.print(i);
+      Serial.print("\n");
+      Serial.print("h:");
+      int h = i+1 % n;
+      Serial.print(h);
+      Serial.print("\n");
+      if( (i+1) % n == 0 || i==strip.numPixels()-1)
+	{
+	  Serial.print("in if\n");
+	  strip.show();
+	  delay(w);
+	  for(int j=i; j>=first_index; j--)
+	    {
+	      strip.setPixelColor(j,0,0,0);
+	    }
+	  first_index = i+1;
+	}
+    }
 }
 
 // Fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
       strip.setPixelColor(i, c);
-      strip.show();
+      //strip.setPixelColor(i,255,255,255);
+      //Serial.print("set the ");
+      //Serial.print(i);
+      //Serial.print("th LED\n");
       delay(wait);
   }
+  strip.show();
 }
 
 void rainbow(uint8_t wait) {
